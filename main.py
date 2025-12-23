@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from model import *
 from SignIn.signIn import signInUser
 from SignUp.signup import signUpUser
+from Update.update import *
+from Update.updatehelper import *
+from Delete.delete import *
 app= FastAPI()
 
 @app.get('/user/signIn')
@@ -41,4 +44,42 @@ def signup(item:SignUp):
             "message":str(e),
             "data":{}
         }
+    
+@app.post('/user/update')
+def update(Data: Update):
+    try:
+        print(len(Data.Newfname))
+        response=update_user_data(Data.Email,Data.Newfname,Data.Newlname,Data.NewPhone,Data.Choice)
+        return {
+            "status":True,
+            "statusCode":200,
+            "message":"User can update details",
+            "data":response
+        }
+    except Exception as e :
+        print("Error in the update:Main",str(e))
+        return {
+            "status":False,
+            "statusCode":400,
+            "message":str(e),
+            "data":{}
+        }
 
+@app.post('/user/delete')
+def delete(request:Delete):
+    try:
+        response= deleteUserAccount(request.Email, request.DeleteChoice)
+        return {
+            "status":True,
+            "statusCode":200,
+            "message":"User can delete",
+            "data":response
+        }
+    except Exception as e :
+        print("Error in the delete:Main",str(e))
+        return {
+            "status":False,
+            "statusCode":400,
+            "message":str(e),
+            "data":{}
+        }

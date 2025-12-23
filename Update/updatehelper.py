@@ -3,30 +3,20 @@ import psycopg2
 from dotenv import load_dotenv
 load_dotenv()
 
-
-# Validating full name
-def validationForFName (fname, lname):
+# Validating new full name
+def validationForNewFname (newfname, newlname):
     try :
-        FullName = fname + " " + lname   
-        FullName = str(FullName).strip()
-        if len(FullName) < 3:
+        NewFullName = newfname + " " + newlname   
+        NewFullName = str(NewFullName).strip()
+        if len(NewFullName) < 3:
+            print("Entered name is not valid. Please try again.")
             return False
         else:
-            return FullName
+            print("Full name validated successfully.")
+            print(NewFullName,"NewFullName")
+            return NewFullName
     except Exception as e:
-        print(f"An error occurred during username validation: {e}")
-        return False
-    
-# Validating phone number
-def validationForPhone(Phone):
-    try :
-        Phone = str(Phone).strip()
-        if len(str(Phone)) != 10:
-            return False
-        else:
-            return True
-    except Exception as e:
-        print(f"An error occurred during username validation: {e}")
+        print(f"An error occurred during full name validation: {e}")
         return False
     
 # Function to connect to the database
@@ -43,4 +33,4 @@ def dbConnection():
         return connection
     except Exception as e:
         print(f"Error connecting to database: {e}")
-        return None  
+        return None

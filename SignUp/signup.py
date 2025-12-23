@@ -4,29 +4,12 @@ from datetime import datetime
 
 # Function to sign up a new user
 def signUpUser(Username, Pword,f_name,l_name, FullName, email_id, phone_no):
-    try:
-
-        ValidUsername = validationForUsername(Username)
-        if ValidUsername:
-            pass
-        else:
-            return "Entered username is not valid. Please try again."
-                
-        Validpword = validationForPassword(Pword)
-        if Validpword:
-            pass
-        else:
-            return "Entered password is not valid. Please try again."
-        
+    try: 
         FullName = validationForFName(f_name, l_name)
         if not FullName:
             print("Entered full name is not valid. Please try again.")
             return False
-        
-        Validemail = validationForEmail(email_id)
-        if not Validemail:
-            return "Entered email is not valid. Please try again." 
-               
+            
         Validphone = validationForPhone(phone_no)
         if not Validphone:
             return "Entered phone number is not valid. Please try again."
