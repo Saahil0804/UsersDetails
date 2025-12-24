@@ -1,15 +1,14 @@
 from pydantic import BaseModel, Field, EmailStr
 
 class SignIn(BaseModel):
-    Email: str
+    Email: EmailStr
     Password: str
 
 class SignUp(BaseModel):
     Username: str = Field(..., min_length=6 , max_length=20)
     Password: str = Field (..., min_length =8)
-    Fname: str 
-    Lname: str
-    FullName: str
+    Fname: str = Field (..., min_length =4)
+    Lname: str = Field (..., min_length =4)
     Email: EmailStr
     Phone: str 
 

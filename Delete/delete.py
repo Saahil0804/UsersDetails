@@ -1,32 +1,38 @@
-from Delete.deletehelper import dbConnection
-
+from database import SessionLocal
+from ormodel import UserDetails
+from datetime import datetime
 # Function to allow user to soft delete or hard delete their account
 def deleteUserAccount(email_id, delete_choice):
     try:
-        connection = dbConnection()
-        if connection is None:
+        db= SessionLocal()
+        if db is None:
             return "Failed to connect to the database."
-        cursor = connection.cursor()
-        auth_query = "SELECT * FROM UserDetails WHERE email_id = %s"    
-        cursor.execute(auth_query, (email_id,))
-        user = cursor.fetchone()
+        user = user = (
+            db.query(UserDetails)
+            .filter(
+                UserDetails.email_id == email_id
+            )
+            .first()
+        )    
         if not user:
             return "Authentication failed. Please check your email and try again."   
         else:
             print("Authentication successful. You can now delete your account.")
             if delete_choice == 1:
-                soft_delete_query = "UPDATE UserDetails SET is_active = false WHERE email_id = %s"
-                cursor.execute(soft_delete_query, (email_id,))
-                connection.commit()
-                print("Your account has been soft deleted.")
-            elif delete_choice == 2:
-                hard_delete_query = "DELETE FROM UserDetails WHERE email_id = %s"
-                cursor.execute(hard_delete_query, (email_id,))
-                connection.commit()
-                print("Your account has been hard deleted.")
+                user.is_active= False
+                user.updated_at= datetime.now()
+                user.updated_by= user.fullname
+                db.commit()
+                return "Your account has been soft deleted."
+            if delete_choice == 2:
+                db.delete(user)
+                db.commit()
+                return "Your account has been hard deleted."
             else:
-                print("Invalid choice. Please enter 1 or 2.")
-            return True
+               return "Invalid choice. Please enter 1 or 2."
     except Exception as e:
-        print(f"An error occurred during account deletion: {e}")
-        raise str(e)
+        db.rollback()
+        raise e
+
+    finally:
+        db.close()

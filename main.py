@@ -29,7 +29,7 @@ def signIn(item:SignIn):
 @app.post('/user/signup')
 def signup(item:SignUp):
     try:
-        response=signUpUser(item.Username,item.Password,item.Fname,item.Lname,item.FullName,item.Email,item.Phone)
+        response=signUpUser(item.Username,item.Password,item.Fname,item.Lname,item.Email,item.Phone)
         return {
             "status":True,
             "statusCode":201,

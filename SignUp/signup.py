@@ -1,71 +1,74 @@
-
+from ormodel import UserDetails
 from SignUp.signuphelper import *
 from datetime import datetime
+from database import SessionLocal
 
 # Function to sign up a new user
-def signUpUser(Username, Pword,f_name,l_name, FullName, email_id, phone_no):
+def signUpUser(Username, Pword,f_name,l_name, email_id, phone_no):
     try: 
         FullName = validationForFName(f_name, l_name)
         if not FullName:
-            print("Entered full name is not valid. Please try again.")
-            return False
+            return "Entered full name is not valid. Please try again."
             
         Validphone = validationForPhone(phone_no)
         if not Validphone:
             return "Entered phone number is not valid. Please try again."
 
-        result = insert_user_data(Username, Pword, FullName, email_id, phone_no, created_at=datetime.now(), updated_at=datetime.now(), created_by=FullName, updated_by=FullName)
+        result = insert_user_data(Username, Pword, FullName, email_id, phone_no)
         return result
     except ValueError:
-        print("Invalid input. Please enter the correct data types.")
-        return False
+        return "Invalid input. Please enter the correct data types."
     except Exception as e:
-        print(f"An error occurred: {e}")
-        return False
+        return f"An error occurred: {e}"
 
 # Function to check if the email already exists
 def check_existing_email(email_id):
     try:
-        connection = dbConnection()
-        if connection is not None:
-            cursor = connection.cursor()
-            email_check_query = "SELECT * FROM UserDetails WHERE email_id = %s and is_active = true"
-            cursor.execute(email_check_query, (email_id,))
-            existing_user = cursor.fetchone()
+        db= SessionLocal()
+        if db is not None:
+            existing_user = (
+            db.query(UserDetails)
+            .filter(
+                UserDetails.email_id == email_id,
+                UserDetails.is_active == True
+            )
+            .first()
+        )
             if existing_user:
-                print("User is already registered with this email.")
-                return False    
+                return "User is already registered with this email."    
             else:
                 print("Email is available for registration.")        
             return True
     except Exception as e:
-            print(f"Error checking existing email: {e}")
-            return False
+            return f"Error checking existing email: {e}"
     finally:
-            if connection:
-                cursor.close()
-                connection.close()
+            db.close()
                 
 # Function to insert user data into the database
-def insert_user_data(Username, Pword, FullName, email_id, phone_no,created_at=datetime.now(), updated_at=datetime.now(), created_by="", updated_by=""):
+def insert_user_data(Username, Pword, FullName, email_id, phone_no):
     try:
-        connection = dbConnection()
-        if connection is None:
+        db= SessionLocal()
+        if db is None:
             raise "Error in database connection."
-        cursor = connection.cursor()
         isUserExist = check_existing_email(email_id)
         if not isUserExist:
-            return "User already exists with this email."
-        insert_query = """
-                INSERT INTO UserDetails (Username, Pword, FullName, email_id, phone_no, created_at, updated_at, created_by, updated_by)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-        cursor.execute(insert_query, (Username, Pword, FullName, email_id, phone_no, created_at, updated_at, created_by, updated_by))
-        connection.commit()
-        return "User signed up successfully!"
-    except Exception as e:
-            print(f"Error inserting user data: {e}")
-    finally:
-            cursor.close()
-            connection.close()
+                return "User already exists with this email."
+        new_user = UserDetails(
+                username=Username,
+                pword=Pword, 
+                fullname=FullName,
+                email_id=email_id,
+                phone_no=phone_no,
+                created_by=FullName,
+                updated_by=FullName
+            )            
+        db.add(new_user)           
+        db.commit()
+        return "User signed up successfully"
 
+    except Exception as e:
+            db.rollback()
+            raise e
+
+    finally:
+            db.close()

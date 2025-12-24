@@ -1,25 +1,29 @@
-from SignIn.signInHelper import dbConnection
+from ormodel import UserDetails
+from database import SessionLocal
 
 # Function to sign in an existing user
 def signInUser(email_id, Pword):
     try:
-        connection = dbConnection()
-        if connection is None:
-            raise "Error in database connection"
-        cursor = connection.cursor()
-        select_query = """
-                SELECT * FROM UserDetails WHERE email_id = %s AND Pword = %s AND is_active = TRUE
-            """
-        cursor.execute(select_query, (email_id, Pword))
-        user = cursor.fetchone()
+        db = SessionLocal()
+        if db is None:
+            raise Exception ("Error in database connection")
+        user =  (
+            db.query(UserDetails)
+            .filter(
+                UserDetails.email_id == email_id,
+                UserDetails.pword == Pword,
+                UserDetails.is_active == True
+            )
+            .first()
+        )
         if user:
             return {
-                 "user_id":user[0],
-                 "username":user[1],
-                 "password":user[2],
-                 "fname":user[3],
-                 "mail":user[4],
-                 "phone":user[5],
+                 "user_id":user.sno,
+                 "username":user.username,
+                 "password":user.pword,
+                 "fname":user.fullname,
+                 "mail":user.email_id,
+                 "phone":user.phone_no,
             }
         else:
             return "Invalid email or password."
@@ -27,5 +31,4 @@ def signInUser(email_id, Pword):
             print("Error in the signInUser:SignIn.signIn",str(e))
             raise e
     finally:
-            cursor.close()
-            connection.close()
+            db.close()

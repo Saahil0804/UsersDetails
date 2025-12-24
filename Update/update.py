@@ -1,61 +1,66 @@
-from Update.updatehelper import *
+from Update.updatehelper import  validationForNewFname
+from ormodel import UserDetails
 from datetime import datetime
+from database import SessionLocal
 
-
-def updateUserDetails(email_id):
+def update_user_data(email_id, fname, lname, phone_update, choice):
+    db = SessionLocal()
     try:
-        connection = dbConnection()
-        if connection is None:
-             raise "Error in database connection"
-        cursor = connection.cursor()
-        auth_query = "SELECT * FROM UserDetails WHERE email_id = %s AND is_active = true"    
-        cursor.execute(auth_query, (email_id,))
-        user = cursor.fetchone()
+        user = (
+            db.query(UserDetails)
+            .filter(
+                UserDetails.email_id == email_id,
+                UserDetails.is_active == True
+            )
+            .first()
+        )
+
         if not user:
-            return False 
-        else:
-            return True
-    except Exception as e:
-        print(f"An error occurred during user authentication: {e}")
-        return False        
+            return "User does not exist"
+
+        if choice not in (1, 2, 3):
+            return "Invalid choice"
+        
+        if choice == 1 and phone_update:
+            return "Invalid operation: choice 1 allows only name update"
+
+        if choice == 2 and (fname or lname):
+            return "Invalid operation: choice 2 allows only phone update"
+
+        if choice == 3 and not (fname or lname or phone_update):
+            return "Invalid operation: nothing to update"
+        
+        if choice ==1:
+            full_name = validationForNewFname(fname, lname)
+            if not full_name:
+                return "Invalid name"
+            user.fullname = full_name
+
+        if choice ==2:
+            user.phone_no = phone_update
 
 
-# Function to update user data into the database
-def update_user_data(email_id,fname,lname,phone_update,choice):
-    try:
-        checkuserExist= updateUserDetails(email_id)
-        if checkuserExist == False:
-            return "User is not Exist"  
-        name_update = validationForNewFname (fname, lname)
-        connection = dbConnection()
-        if connection is None:
-            return "Failed to connect to the database."
-        cursor = connection.cursor()
-        if choice == 1:
-            update_query = """
-                UPDATE UserDetails
-                SET FullName = %s, updated_at = CURRENT_TIMESTAMP, updated_by = FullName
-                WHERE email_id = %s
-            """
-            cursor.execute(update_query, (name_update, email_id))
-        if choice == 2:
-            update_query = """
-                UPDATE UserDetails
-                SET phone_no = %s, updated_at = CURRENT_TIMESTAMP, updated_by = FullName
-                WHERE email_id = %s
-            """
-            cursor.execute(update_query, (phone_update, email_id))
         if choice == 3:
-            update_query = """
-                    UPDATE UserDetails
-                    SET FullName = %s, phone_no = %s, updated_at = CURRENT_TIMESTAMP, updated_by = FullName
-                    WHERE email_id = %s
-            """
-            cursor.execute(update_query, (name_update, phone_update, email_id))
-        connection.commit()
-        cursor.close()
-        connection.close()
-        return "User details updated successfully."
+            full_name = validationForNewFname(fname, lname)
+            if not full_name:
+                return "Invalid name"
+
+            if not phone_update:
+                return "Invalid phone number"
+
+            user.fullname = full_name
+            user.phone_no = phone_update
+
+        user.updated_at = datetime.now()
+        user.updated_by = user.fullname or "Admin"
+
+        db.commit()
+        return "User details updated successfully"
+
     except Exception as e:
-        print(f"An error occurred while updating user data: {e}")
-        raise "Failed to update user details."
+        db.rollback()
+        raise e
+
+
+    finally:
+        db.close()
