@@ -1,8 +1,3 @@
-import os
-import psycopg2
-from dotenv import load_dotenv
-load_dotenv()
-
 
 # Validating full name
 def validationForFName (fname, lname):
@@ -29,18 +24,3 @@ def validationForPhone(Phone):
         print(f"An error occurred during username validation: {e}")
         return False
     
-# Function to connect to the database
-def dbConnection():
-    try:
-        connection = psycopg2.connect(
-            host=os.getenv("HOSTNAME"),
-            user=os.getenv("USER_NAME"),
-            password=os.getenv("PASSWORD"),
-            database=os.getenv("DATABASE"),
-            port=os.getenv("PORT")
-        )
-        print("Database connected successfully")
-        return connection
-    except Exception as e:
-        print(f"Error connecting to database: {e}")
-        return None  
