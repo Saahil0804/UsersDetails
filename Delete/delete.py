@@ -10,7 +10,8 @@ def deleteUserAccount(email_id, delete_choice):
         user = user = (
             db.query(UserDetails)
             .filter(
-                UserDetails.email_id == email_id
+                UserDetails.email_id == email_id,
+                UserDetails.is_active == True
             )
             .first()
         )    
