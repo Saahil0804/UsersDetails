@@ -2,6 +2,7 @@ from ormodel import UserDetails
 from SignUp.signuphelper import *
 from datetime import datetime
 from database import SessionLocal
+from security import hash_password
 
 # Function to sign up a new user
 def signUpUser(Username, Pword,f_name,l_name, email_id, phone_no):
@@ -13,8 +14,10 @@ def signUpUser(Username, Pword,f_name,l_name, email_id, phone_no):
         Validphone = validationForPhone(phone_no)
         if not Validphone:
             return "Entered phone number is not valid. Please try again."
+        
+        Password= hash_password(Pword)
 
-        result = insert_user_data(Username, Pword, FullName, email_id, phone_no)
+        result = insert_user_data(Username, Password, FullName, email_id, phone_no)
         return result
     except ValueError:
         return "Invalid input. Please enter the correct data types."
@@ -34,16 +37,10 @@ def check_existing_email(email_id):
             )
             .first()
         )
-            if existing_user:
-                return "User is already registered with this email."    
-            else:
-                print("Email is available for registration.")        
-            return True
-    except Exception as e:
-            return f"Error checking existing email: {e}"
+        return existing_user is None
     finally:
-            db.close()
-                
+         db.close()
+    
 # Function to insert user data into the database
 def insert_user_data(Username, Pword, FullName, email_id, phone_no):
     try:

@@ -6,7 +6,7 @@ class UserDetails(Base):
     __tablename__ = "userdetails"   
     sno = Column(Integer, primary_key=True, index=True)
     username = Column(String(50))
-    pword = Column(String(50))
+    pword = Column(String(100))
 
     fullname = Column(String(50))
     email_id = Column(String(50))

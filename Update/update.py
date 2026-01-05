@@ -2,10 +2,12 @@ from Update.updatehelper import  validationForNewFname
 from ormodel import UserDetails
 from datetime import datetime
 from database import SessionLocal
+from auth import verify_access_token
 
-def update_user_data(email_id, fname, lname, phone_update, choice):
+def update_user_data(token, fname, lname, phone_update, choice):
     db = SessionLocal()
     try:
+        email_id = verify_access_token(token)
         user = (
             db.query(UserDetails)
             .filter(

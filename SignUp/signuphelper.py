@@ -14,13 +14,17 @@ def validationForFName (fname, lname):
     
 # Validating phone number
 def validationForPhone(Phone):
-    try :
+    try:
         Phone = str(Phone).strip()
-        if len(str(Phone)) != 10:
+
+        if not Phone.isdigit():
             return False
-        else:
-            return True
+
+        if len(Phone) != 10:
+            return False
+
+        return True
+
     except Exception as e:
-        print(f"An error occurred during username validation: {e}")
+        print(f"Error during phone validation: {e}")
         return False
-    

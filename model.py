@@ -13,14 +13,12 @@ class SignUp(BaseModel):
     Phone: str 
 
 class Update(BaseModel):
-    Email: EmailStr
     Choice: int
     Newfname: str =Field(..., min_length=3)
     Newlname: str =Field(...,min_length=3)
     NewPhone: str = Field(...,min_length=10)
+    
 
 class Delete(BaseModel):
-    Email: EmailStr
-    DeleteChoice: int
-    
+    DeleteChoice: int    
     

@@ -1,5 +1,7 @@
 from ormodel import UserDetails
 from database import SessionLocal
+from auth import create_access_token
+from security import verify_password
 
 # Function to sign in an existing user
 def signInUser(email_id, Pword):
@@ -11,22 +13,32 @@ def signInUser(email_id, Pword):
             db.query(UserDetails)
             .filter(
                 UserDetails.email_id == email_id,
-                UserDetails.pword == Pword,
                 UserDetails.is_active == True
             )
             .first()
         )
-        if user:
-            return {
+        if not user or not verify_password(Pword, user.pword):
+            return {"error": "Invalid email or password"}
+
+        # 🔐 Create JWT Token
+        access_token = create_access_token(
+            data={
+                "sub": user.email_id,
+                "user_id": user.sno
+            }
+        )
+        return {
+                    "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
                  "user_id":user.sno,
                  "username":user.username,
-                 "password":user.pword,
                  "fname":user.fullname,
                  "mail":user.email_id,
                  "phone":user.phone_no,
             }
-        else:
-            return "Invalid email or password."
+            }
+      
     except Exception as e:
             print("Error in the signInUser:SignIn.signIn",str(e))
             raise e
